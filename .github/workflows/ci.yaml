@@ -22,9 +22,9 @@ jobs:
 
       - name: Validate Helm Chart
         run: |
-          helm lint ./newapp -f values-dev.yaml
+          helm lint ./newapp -f ./newapp/values-dev.yaml
 
       - name: Render Helm Templates
         run: |
-          helm template my-project ./newapp -f values-dev.yaml
+          helm template my-project ./newapp -f ./newapp/values-dev.yaml
 
