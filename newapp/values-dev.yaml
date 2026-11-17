@@ -1,0 +1,13 @@
+env:
+  appEnv: "devam"
+
+container:
+  port: 8080
+
+service:
+  port: 8080
+
+image:
+  repository: my-project
+  tag: v1.1
+
