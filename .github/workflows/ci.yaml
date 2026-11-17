@@ -20,6 +20,10 @@ jobs:
         run: |
           docker build -t my-project:${{ github.sha }} .
 
+      - name: Push Docker Image To DockerHub 
+        run : |
+          docker image push my-project:${{ github.sha }}
+
       - name: Validate Helm Chart
         run: |
           helm lint ./newapp -f ./newapp/values-dev.yaml
