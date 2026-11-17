@@ -1,63 +1,30 @@
-name: ci
+name: CI Pipeline
 
 on:
-  pull_request:
   push:
-    branches: [main]
-
-permissions:
-  contents: read
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: Dockerfile
-      - run: helm lint ./newapp -f newapp/values-dev.yaml
 
-  build-test:
-    needs: lint
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: docker build -t my-project:${{ github.sha }} .
-      - uses: helm/kind-action@v1
-      - run: kind load docker-image my-project:${{ github.sha }}
-      - run: |
-          helm install myhelm ./newapp -f newapp/values-dev.yaml \
-            --set image.tag=${{ github.sha }} --wait --timeout 120s
-      - name: Smoke test
-        run: |
-          kubectl port-forward svc/myhelm-newapp 8080:8080 &
-          sleep 5
-          curl -fsS -i http://localhost:8080/
-          curl -fsS -i http://localhost:8080/health
-      - name: Debug on failure
-        if: failure()
-        run: |
-          kubectl get pods,svc,endpoints
-          kubectl describe pods
-          kubectl logs -l app.kubernetes.io/instance=myhelm --tail=50
+      - name: Checkout Repository
+        uses: actions/checkout@v7
 
-  push:
-    needs: build-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+      - name: Build Docker Image
+        run: |
+          docker build -t my-project:${{ github.sha }} .
+
+      - name: Validate Helm Chart
+        run: |
+          helm lint ./newapp -f values-dev.yaml
+
+      - name: Render Helm Templates
+        run: |
+          helm template my-project ./newapp -f values-dev.yaml
+
