@@ -23,11 +23,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build Docker Image
         run: |
-          docker build -t my-project:${{ github.sha }} .
+          docker build -t aysebeyaz/my-project:${{ github.sha }} .
 
       - name: Push Docker Image To DockerHub 
         run : |
-          docker image push my-project:${{ github.sha }}
+          docker image push aysebeyaz/my-project:${{ github.sha }}
 
       - name: Validate Helm Chart
         run: |
