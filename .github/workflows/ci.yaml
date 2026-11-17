@@ -26,5 +26,4 @@ jobs:
 
       - name: Render Helm Templates
         run: |
-          helm template my-project ./newapp -f ./newapp/values-dev.yaml
-
+          helm template my-project ./newapp -f ./newapp/values-dev.yaml --set image.tag=${{ github.sha }}
